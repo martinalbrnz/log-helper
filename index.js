@@ -109,6 +109,20 @@ async function main() {
     return process.exit(0);
   }
 
+  // const projectType = await select({
+  //   message: "Pick a project type.",
+  //   options: [
+  //     { value: "ts", label: "TypeScript" },
+  //     { value: "js", label: "JavaScript" },
+  //     { value: "coffee", label: "CoffeeScript", hint: "oh no" },
+  //   ],
+  // });
+
+  // if (isCancel(projectType)) {
+  //   cancel("Operation cancelled");
+  //   return process.exit(0);
+  // }
+
   const s = spinner();
   s.start("Installing via npm");
 
