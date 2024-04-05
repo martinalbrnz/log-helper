@@ -82,20 +82,16 @@ async function main() {
         console.log(res);
         break;
       case "stable":
-        console.log("input: ", versionType);
-        console.log(color.gray("│ "), color.bgRed("   not supported yet   "));
+        notSuppBro(process);
         break;
       case "prepatch":
-        console.log("input: ", versionType);
-        console.log(color.gray("│ "), color.bgRed("   not supported yet   "));
+        notSuppBro(process);
         break;
       case "preminor":
-        console.log("input: ", versionType);
-        console.log(color.gray("│ "), color.bgRed("   not supported yet   "));
+        notSuppBro(process);
         break;
       case "premajor":
-        console.log("input: ", versionType);
-        console.log(color.gray("│ "), color.bgRed("   not supported yet   "));
+        notSuppBro(process);
         break;
 
       case "manual":
@@ -167,3 +163,13 @@ async function main() {
 }
 
 main().catch(console.error);
+
+function notSuppBro(process) {
+  console.log(color.red("x  Error! ────────────────────────╮"));
+  console.log(color.red("│                                 │"));
+  console.log(color.red("│   Todavía no está soportado :(  │"));
+  console.log(color.red("│                                 │"));
+  console.log(color.red("├─────────────────────────────────╯"));
+  outro("Lo 100to :'(");
+  return process.exit(0);
+}
