@@ -7,15 +7,16 @@ import {
   spinner,
   text,
 } from "@clack/prompts";
+import { execSync } from "child_process";
 import { setTimeout as sleep } from "node:timers/promises";
 import color from "picocolors";
 
 async function main() {
   console.log();
-  intro(color.bgGreen(`log-helper`));
+  intro(color.bgGreen(`  log-helper  `));
   console.log(
     color.gray("│ "),
-    color.bgGreen(color.black(color.bold("mono mono mono")))
+    color.bgGreen(color.black(color.bold(" mensaje util ")))
   );
 
   const operationType = await select({
@@ -24,7 +25,6 @@ async function main() {
       { value: "commit", label: "Nuevo commit" },
       { value: "branch", label: "Nueva rama" },
       { value: "version", label: "Nueva versión" },
-      { value: "cancel", label: "Cancelar" },
     ],
   });
 
@@ -42,21 +42,26 @@ async function main() {
           label: "Prerelease",
           hint: "v1.2.3-rc.4 -> v1.2.3-rc.5",
         },
-        { value: "prerelease", label: "Stable", hint: "v1.2.3-rc.4 -> v1.2.3" },
+        { value: "stable", label: "Stable", hint: "v1.2.3-rc.4 -> v1.2.3" },
         {
-          value: "prerelease",
+          value: "prepatch",
           label: "Pre patch",
-          hint: "v1.2.3-rc. -> v1.2.4-rc.0",
+          hint: "v1.2.3-rc.4 -> v1.2.4-rc.0",
         },
         {
-          value: "prerelease",
+          value: "preminor",
           label: "Pre minor",
           hint: "v1.2.3-rc.4 -> v1.3.0-rc.0",
         },
         {
-          value: "prerelease",
+          value: "premajor",
           label: "Pre major",
           hint: "v1.2.3-rc.4 -> v2.0.0-rc.0",
+        },
+        {
+          value: "manual",
+          label: "Manual",
+          hint: "Please avoid this :(",
         },
       ],
     });
@@ -64,6 +69,39 @@ async function main() {
     if (isCancel(versionType)) {
       cancel("Operation cancelled");
       return process.exit(0);
+    }
+
+    switch (versionType) {
+      case "prerelease":
+        // const res = execSync(`npm version prerelease --preid=rc -m "v%s"`, {
+        //   encoding: "utf-8",
+        // });
+        const res = execSync(`ls`, {
+          encoding: "utf-8",
+        });
+        console.log(res);
+        break;
+      case "stable":
+        console.log("input: ", versionType);
+        console.log(color.gray("│ "), color.bgRed("   not supported yet   "));
+        break;
+      case "prepatch":
+        console.log("input: ", versionType);
+        console.log(color.gray("│ "), color.bgRed("   not supported yet   "));
+        break;
+      case "preminor":
+        console.log("input: ", versionType);
+        console.log(color.gray("│ "), color.bgRed("   not supported yet   "));
+        break;
+      case "premajor":
+        console.log("input: ", versionType);
+        console.log(color.gray("│ "), color.bgRed("   not supported yet   "));
+        break;
+
+      case "manual":
+        break;
+      default:
+        return process.exit(0);
     }
   }
 
@@ -98,7 +136,6 @@ async function main() {
     message: "Inserte descripción del commit:",
     initialValue: "",
     validate(value) {
-      console.log("value: ", value);
       if (!value || value.trim().length === 0)
         return "La descripción es requerida!";
     },
@@ -108,20 +145,6 @@ async function main() {
     cancel("Operation cancelled");
     return process.exit(0);
   }
-
-  // const projectType = await select({
-  //   message: "Pick a project type.",
-  //   options: [
-  //     { value: "ts", label: "TypeScript" },
-  //     { value: "js", label: "JavaScript" },
-  //     { value: "coffee", label: "CoffeeScript", hint: "oh no" },
-  //   ],
-  // });
-
-  // if (isCancel(projectType)) {
-  //   cancel("Operation cancelled");
-  //   return process.exit(0);
-  // }
 
   const s = spinner();
   s.start("Installing via npm");
