@@ -1,6 +1,5 @@
 import {
   cancel,
-  confirm,
   intro,
   isCancel,
   outro,
@@ -8,6 +7,7 @@ import {
   spinner,
   text,
 } from "@clack/prompts";
+import { match } from "assert";
 import { execSync } from "child_process";
 import { setTimeout as sleep } from "node:timers/promises";
 import color from "picocolors";
@@ -20,31 +20,26 @@ async function main() {
     color.bgGreen(color.black(color.bold("mono mono mono")))
   );
 
-  const name = await text({
+  const ticketId = await text({
     message: "Inserte ID del ticket padre?",
     placeholder: "86dmoejds",
   });
 
-  if (isCancel(name)) {
-    cancel("Operation cancelled");
-    return process.exit(0);
-  }
-
-  const shouldContinue = await confirm({
-    message: "Do you want to continue?",
-  });
-
-  if (isCancel(shouldContinue)) {
+  if (isCancel(ticketId)) {
     cancel("Operation cancelled");
     return process.exit(0);
   }
 
   const commitType = await select({
-    message: "Pick a project type.",
+    message: "Tipo de commit:",
     options: [
-      { value: "ts", label: "TypeScript" },
-      { value: "js", label: "JavaScript" },
-      { value: "coffee", label: "CoffeeScript", hint: "oh no" },
+      { value: "feat", label: "Feature" },
+      { value: "fix", label: "Fix" },
+      { value: "style", label: "Style" },
+      { value: "build", label: "Build" },
+      { value: "hotfix", label: "Hotfix" },
+      { value: "refactor", label: "Refactor" },
+      { value: "docs", label: "Documentation" },
     ],
   });
 
@@ -53,19 +48,30 @@ async function main() {
     return process.exit(0);
   }
 
-  const projectType = await select({
-    message: "Pick a project type.",
-    options: [
-      { value: "ts", label: "TypeScript" },
-      { value: "js", label: "JavaScript" },
-      { value: "coffee", label: "CoffeeScript", hint: "oh no" },
-    ],
+  const commitBody = await text({
+    message: "Inserte descripción del commit:",
+    placeholder: "Nueva funcionalidad",
+    validate: (val) => match(val, new RegExp("/^.{3,}$/")),
   });
 
-  if (isCancel(projectType)) {
+  if (isCancel(commitBody)) {
     cancel("Operation cancelled");
     return process.exit(0);
   }
+
+  // const projectType = await select({
+  //   message: "Pick a project type.",
+  //   options: [
+  //     { value: "ts", label: "TypeScript" },
+  //     { value: "js", label: "JavaScript" },
+  //     { value: "coffee", label: "CoffeeScript", hint: "oh no" },
+  //   ],
+  // });
+
+  // if (isCancel(projectType)) {
+  //   cancel("Operation cancelled");
+  //   return process.exit(0);
+  // }
 
   const s = spinner();
   s.start("Installing via npm");
@@ -77,7 +83,7 @@ async function main() {
 
   s.stop("Installed via npm");
 
-  console.log();
+  console.log(`${commitType}[#${ticketId}]: ${commitBody}`);
 
   outro("You're all set!");
 
