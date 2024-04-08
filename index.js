@@ -18,7 +18,6 @@ async function main() {
   let actionType;
   let operationDescription;
   let ticketId;
-  let operationResponse;
   let terminalCommand;
 
   console.log();
