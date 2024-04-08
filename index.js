@@ -1,5 +1,6 @@
 import {
   cancel,
+  confirm,
   intro,
   isCancel,
   outro,
@@ -10,13 +11,58 @@ import {
 import { execSync } from "child_process";
 import { setTimeout as sleep } from "node:timers/promises";
 import color from "picocolors";
+import { createBranch } from "./src/createBranchName.js";
+import { createCommit } from "./src/createCommitMessage.js";
 
 async function main() {
+  let actionType;
+  let operationDescription;
+  let ticketId;
+  let operationResponse;
+  let terminalCommand;
+
   console.log();
-  intro(color.bgGreen(`  log-helper  `));
+
+  intro(color.green("888                                    "));
   console.log(
     color.gray("│ "),
-    color.bgGreen(color.black(color.bold(" mensaje util ")))
+    color.green("888                                    ")
+  );
+  console.log(
+    color.gray("│ "),
+    color.green("888                                    ")
+  );
+  console.log(
+    color.gray("│ "),
+    color.green("888  .d88b.   .d88b.   .d88b.  888d888 ")
+  );
+  console.log(
+    color.gray("│ "),
+    color.green('888 d88""88b d88P"88b d8P  Y8b 888P"   ')
+  );
+  console.log(
+    color.gray("│ "),
+    color.green("888 888  888 888  888 88888888 888     ")
+  );
+  console.log(
+    color.gray("│ "),
+    color.green("888 Y88..88P Y88b 888 Y8b.     888     ")
+  );
+  console.log(
+    color.gray("│ "),
+    color.green('888  "Y88P"   "Y88888  "Y8888  888     ')
+  );
+  console.log(
+    color.gray("│ "),
+    color.green("                  888                  ")
+  );
+  console.log(
+    color.gray("│ "),
+    color.green("             Y8b d88P                  ")
+  );
+  console.log(
+    color.gray("│ "),
+    color.green('              "Y88P"                   ')
   );
 
   const operationType = await select({
@@ -34,6 +80,8 @@ async function main() {
   }
 
   if (operationType === "version") {
+    notSuppBro(process);
+
     const versionType = await select({
       message: "¿Qué versión deberíamos subir?:",
       options: [
@@ -73,16 +121,17 @@ async function main() {
 
     switch (versionType) {
       case "prerelease":
-        // const res = execSync(`npm version prerelease --preid=rc -m "v%s"`, {
+        // const operationResponse = execSync(`npm version prerelease --preid=rc -m "v%s"`, {
         //   encoding: "utf-8",
         // });
-        const res = execSync(`ls`, {
+        operationResponse = execSync(`ls`, {
           encoding: "utf-8",
         });
-        console.log(res);
         break;
       case "stable":
-        notSuppBro(process);
+        operationResponse = execSync(`ls`, {
+          encoding: "utf-8",
+        });
         break;
       case "prepatch":
         notSuppBro(process);
@@ -101,71 +150,118 @@ async function main() {
     }
   }
 
-  const ticketId = await text({
-    message: "Inserte ID del ticket padre?",
-  });
+  if (operationType === "branch" || operationType === "commit") {
+    /* Tipo de acción */
+    actionType = await select({
+      message: "Tipo de acción:",
+      options: [
+        { value: "feat", label: "Feature" },
+        { value: "fix", label: "Fix" },
+        { value: "style", label: "Style" },
+        { value: "build", label: "Build" },
+        { value: "hotfix", label: "Hotfix" },
+        { value: "manual", label: "Manual" },
+      ],
+    });
 
-  if (isCancel(ticketId)) {
-    cancel("Operation cancelled");
-    return process.exit(0);
-  }
+    if (isCancel(actionType)) {
+      cancel("Operation cancelled");
+      return process.exit(0);
+    }
 
-  const commitType = await select({
-    message: "Tipo de commit:",
-    options: [
-      { value: "feat", label: "Feature" },
-      { value: "fix", label: "Fix" },
-      { value: "style", label: "Style" },
-      { value: "build", label: "Build" },
-      { value: "hotfix", label: "Hotfix" },
-      { value: "refactor", label: "Refactor" },
-      { value: "docs", label: "Documentation" },
-    ],
-  });
+    if (actionType !== "manual") {
+      /* ID del ticket */
+      ticketId = await text({
+        message: "Inserte ID del ticket padre?",
+      });
 
-  if (isCancel(commitType)) {
-    cancel("Operation cancelled");
-    return process.exit(0);
-  }
+      if (isCancel(ticketId)) {
+        cancel("Operation cancelled");
+        return process.exit(0);
+      }
+    }
 
-  const commitBody = await text({
-    message: "Inserte descripción del commit:",
-    initialValue: "",
-    validate(value) {
-      if (!value || value.trim().length === 0)
-        return "La descripción es requerida!";
-    },
-  });
+    if (operationType === "commit") {
+      operationDescription = await text({
+        message: "Inserte descripción del commit:",
+        // initialValue: "",
+        validate(value) {
+          if (!value || value.trim().length === 0)
+            return "La descripción es requerida!";
+        },
+      });
 
-  if (isCancel(commitBody)) {
-    cancel("Operation cancelled");
-    return process.exit(0);
+      if (isCancel(operationDescription)) {
+        cancel("Operation cancelled");
+        return process.exit(0);
+      }
+
+      const shouldAddChanges = await confirm({
+        message: "¿Agregar todos los cambios?",
+        active: "Si",
+        inactive: "No",
+      });
+
+      if (shouldAddChanges) {
+        execSync(`git add .`, {
+          encoding: "utf-8",
+          windowsHide: true,
+        });
+      }
+
+      createCommit({
+        actionType,
+        operationDescription,
+        ticketId,
+      });
+    }
+
+    if (operationType === "branch") {
+      operationDescription = await text({
+        message: "Inserte descripción de la rama:",
+        // initialValue: "",
+        validate(value) {
+          if (!value || value.trim().length === 0)
+            return "La descripción es requerida!";
+        },
+      });
+
+      if (isCancel(operationDescription)) {
+        cancel("Operation cancelled");
+        return process.exit(0);
+      }
+
+      createBranch({ actionType, operationDescription, ticketId });
+    }
   }
 
   const s = spinner();
   s.start("Installing via npm");
 
-  const commitMessage = `${commitType}${
-    ticketId ? "[#" + ticketId.trim() + "]" : ""
-  }: ${commitBody.trim()}`;
+  // commitMessage = `${actionType}${
+  //   ticketId ? "[#" + ticketId.trim() + "]" : ""
+  // }: ${operationDescription.trim()}`;
+
+  console.log("command: ", terminalCommand);
 
   // const res = execSync(`git add . && git commit -m "${commitMessage}"`, {
   //   encoding: "utf-8",
   // });
 
-  await sleep(3000);
-
-  s.stop(commitMessage);
-
-  outro(commitMessage);
+  // console.log("Respuesta: ", operationResponse);
 
   await sleep(1000);
+
+  s.stop("Listo!");
+
+  outro("Gracias :)");
 }
 
 main().catch(console.error);
 
 function notSuppBro(process) {
-  console.log(color.red("x  Error! ────────────────────────╮"));
+  console.log(color.gray("│"));
+  console.log(color.red("x  Error!  ───────────────────────╮"));
   console.log(color.red("│                                 │"));
   console.log(color.red("│   Todavía no está soportado :(  │"));
   console.log(color.red("│                                 │"));
