@@ -39,7 +39,7 @@ async function main() {
   });
 
   if (isCancel(operationType)) {
-    cancel("Operation cancelled");
+    cancel("Operación cancelada");
     return process.exit(0);
   }
 
@@ -77,7 +77,7 @@ async function main() {
     });
 
     if (isCancel(versionType)) {
-      cancel("Operation cancelled");
+      cancel("Operación cancelada");
       return process.exit(0);
     }
 
@@ -90,7 +90,7 @@ async function main() {
     });
 
     if (isCancel(manualVersion)) {
-      cancel("Operation cancelled");
+      cancel("Operación cancelada");
       return process.exit(0);
     }
 
@@ -114,7 +114,7 @@ async function main() {
     });
 
     if (isCancel(actionType)) {
-      cancel("Operation cancelled");
+      cancel("Operación cancelada");
       return process.exit(0);
     }
 
@@ -125,7 +125,7 @@ async function main() {
       });
 
       if (isCancel(ticketId)) {
-        cancel("Operation cancelled");
+        cancel("Operación cancelada");
         return process.exit(0);
       }
     }
@@ -140,7 +140,7 @@ async function main() {
       });
 
       if (isCancel(operationDescription)) {
-        cancel("Operation cancelled");
+        cancel("Operación cancelada");
         return process.exit(0);
       }
 
@@ -149,6 +149,11 @@ async function main() {
         active: "Si",
         inactive: "No",
       });
+
+      if (isCancel(shouldAddChanges)) {
+        cancel("Operación cancelada");
+        return process.exit(0);
+      }
 
       if (shouldAddChanges) {
         execSync(`git add .`, {
@@ -176,7 +181,7 @@ async function main() {
       });
 
       if (isCancel(operationDescription)) {
-        cancel("Operation cancelled");
+        cancel("Operación cancelada");
         return process.exit(0);
       }
 
@@ -186,13 +191,29 @@ async function main() {
     }
   }
 
-  // s.start("Procesando");
-
-  console.log("command: ", terminalCommand);
-
   await sleep(1000);
 
   s.stop("Listo!");
+
+  const shouldPushChanges = await confirm({
+    message: "¿Subir cambios a origen?",
+    active: "Si",
+    inactive: "No",
+  });
+
+  if (isCancel(shouldPushChanges)) {
+    cancel("Operación cancelada");
+    return process.exit(0);
+  }
+
+  if (shouldPushChanges) {
+    s.start("Subiendo cambios...");
+    execSync(`git push origin`, {
+      encoding: "utf-8",
+      windowsHide: true,
+    });
+    s.stop("Listo!");
+  }
 
   outro("Gracias :)");
 }
